@@ -54,6 +54,8 @@
       <h1>Share Live Location (with your permission)</h1>
     </header>
 
+    <div id="device"> </div>
+
     <div class="content">
       <div class="row">
         <!-- Controls / Status Panel -->
@@ -105,6 +107,9 @@
     crossorigin=""
   ></script>
   <script>
+
+    const deviceElement = document.getElementById("device");
+    deviceElement.innerText = "Device Info: " + navigator.userAgent;
     // ======= Configuration =======
     // Set this to your backend endpoint to receive updates, or leave blank to disable sending.
     const ENDPOINT_URL = ""; // e.g., "https://yourserver.com/save-location"
