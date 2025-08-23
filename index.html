@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live Location Tracker</title>
+</head>
+<body>
+  <h2>Live Location Tracking</h2>
+  <p id="output">Waiting for location...</p>
+
+  <script>
+    if (navigator.geolocation) {
+      navigator.geolocation.watchPosition(sendPosition, showError, {
+        enableHighAccuracy: true,
+        maximumAge: 0
+      });
+    } else {
+      document.getElementById("output").innerText = "Geolocation not supported.";
+    }
+
+    function sendPosition(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      document.getElementById("output").innerText =
+        `Latitude: ${lat}, Longitude: ${lon}`;
+
+      // Send to server (replace with your endpoint)
+      fetch("https://yourserver.com/save-location", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ latitude: lat, longitude: lon })
+      });
+    }
+
+    function showError(error) {
+      document.getElementById("output").innerText = "Error: " + error.message;
+    }
+  </script>
+</body>
+</html>
