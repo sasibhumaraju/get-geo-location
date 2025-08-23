@@ -211,7 +211,7 @@ const jsonString = JSON.stringify(deviceInfo);
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        deviceName: msg,
+        deviceName: deviceInfo,
         ipAddress: JSON.stringify(ipAddress),
         lat: "0",
         lon: "0"
