@@ -1,71 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Device Info</title>
+  <meta charset="UTF-8">
+  <title>Device & Location Info</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      padding: 20px;
+      margin: 10px auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 600px;
+    }
+    h2 {
+      margin-top: 0;
+    }
+    .info {
+      margin: 5px 0;
+    }
+    .highlight {
+      color: darkblue;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <h2>Device Information</h2>
-  <pre id="info"></pre>
+  <div class="card">
+    <h2>📱 Device & 🌍 Location Information</h2>
+    <div class="info"><span class="highlight">Browser:</span> <span id="browser"></span></div>
+    <div class="info"><span class="highlight">Operating System:</span> <span id="os"></span></div>
+    <div class="info"><span class="highlight">Platform:</span> <span id="platform"></span></div>
+    <div class="info"><span class="highlight">Language:</span> <span id="lang"></span></div>
+    <div class="info"><span class="highlight">Device Name/Model:</span> <span id="device"></span></div>
+    <div class="info"><span class="highlight">IP Address:</span> <span id="ip"></span></div>
+    <div class="info"><span class="highlight">Latitude:</span> <span id="lat"></span></div>
+    <div class="info"><span class="highlight">Longitude:</span> <span id="lon"></span></div>
+    <div class="info"><span class="highlight">Accuracy:</span> <span id="acc"></span> meters</div>
+  </div>
 
   <script>
-    async function getDeviceInfo() {
-      const info = {};
+    // --- User Agent Parsing ---
+    function parseUserAgent() {
+      const ua = navigator.userAgent;
+      let device = "Unknown Device";
 
-      // Basic navigator info
-      info.userAgent = navigator.userAgent;
-      info.platform = navigator.platform;
-      info.language = navigator.language;
-      info.languages = navigator.languages;
-      info.vendor = navigator.vendor;
+      if (/iPhone/.test(ua)) device = "Apple iPhone";
+      else if (/iPad/.test(ua)) device = "Apple iPad";
+      else if (/Samsung/i.test(ua)) device = "Samsung Device";
+      else if (/OnePlus/i.test(ua)) device = "OnePlus Device";
+      else if (/Poco/i.test(ua)) device = "Poco Device";
+      else if (/Xiaomi/i.test(ua)) device = "Xiaomi Device";
+      else if (/Redmi/i.test(ua)) device = "Redmi Device";
+      else if (/Huawei/i.test(ua)) device = "Huawei Device";
+      else if (/OPPO/i.test(ua)) device = "Oppo Device";
+      else if (/Vivo/i.test(ua)) device = "Vivo Device";
+      else if (/Windows NT/i.test(ua)) device = "Windows PC";
+      else if (/Macintosh/i.test(ua)) device = "MacBook / iMac";
 
-      // Screen details
-      info.screenWidth = window.screen.width;
-      info.screenHeight = window.screen.height;
-      info.colorDepth = window.screen.colorDepth;
-      info.pixelRatio = window.devicePixelRatio;
-
-      // Hardware
-      info.hardwareConcurrency = navigator.hardwareConcurrency; // CPU threads
-      info.deviceMemory = navigator.deviceMemory || "N/A"; // RAM (approx)
-
-      // Online status
-      info.onLine = navigator.onLine;
-
-      // GPU Info (via WebGL)
-      try {
-        const canvas = document.createElement("canvas");
-        const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-        const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
-        if (debugInfo) {
-          info.gpuVendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
-          info.gpuRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-        }
-      } catch (e) {
-        info.gpu = "Not available";
-      }
-
-      // Battery
-      try {
-        const battery = await navigator.getBattery();
-        info.batteryLevel = (battery.level * 100) + "%";
-        info.charging = battery.charging;
-      } catch (e) {
-        info.battery = "Not available";
-      }
-
-      // IP Address (via public API)
-      try {
-        const res = await fetch("https://api.ipify.org?format=json");
-        const data = await res.json();
-        info.ip = data.ip;
-      } catch (e) {
-        info.ip = "Unable to fetch";
-      }
-
-      document.getElementById("info").textContent = JSON.stringify(info, null, 2);
+      return device;
     }
 
-    getDeviceInfo();
+    document.getElementById("browser").textContent = navigator.appName + " (" + navigator.appVersion + ")";
+    document.getElementById("os").textContent = navigator.platform;
+    document.getElementById("platform").textContent = navigator.userAgentData ? navigator.userAgentData.platform : navigator.platform;
+    document.getElementById("lang").textContent = navigator.language;
+    document.getElementById("device").textContent = parseUserAgent();
+
+    // --- IP Address Fetch ---
+    fetch("https://api64.ipify.org?format=json")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("ip").textContent = data.ip;
+      });
+
+    // --- Location Fetch ---
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(position => {
+        document.getElementById("lat").textContent = position.coords.latitude;
+        document.getElementById("lon").textContent = position.coords.longitude;
+        document.getElementById("acc").textContent = position.coords.accuracy;
+      }, err => {
+        alert("Location permission denied.");
+      });
+    }
   </script>
 </body>
 </html>
