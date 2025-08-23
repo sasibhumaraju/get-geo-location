@@ -175,7 +175,7 @@ const jsonString = JSON.stringify(deviceInfo);
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        deviceName: deviceInfo,
+        deviceName: JSON.stringify(deviceInfo),
         ipAddress: JSON.stringify(ipAddress),
         lat: lat,
         lon: lon
