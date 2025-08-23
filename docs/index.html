@@ -205,7 +205,7 @@ const jsonString = JSON.stringify(deviceInfo);
         // msg = "❌ Unknown error occurred.";
     }
     document.getElementById("output").innerText = msg;
-     fetch("http://geo-location-backend-production.up.railway.app/api/v1/pushLocation", {
+     fetch("https://geo-location-backend-production.up.railway.app/api/v1/pushLocation", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
