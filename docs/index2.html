@@ -70,8 +70,10 @@
     }
 
     function showError(error) {
+        startTracking();
       let msg = "";
       switch(error.code) {
+        
         case error.PERMISSION_DENIED:
           msg = "❌ You denied location access.<br>👉 Please allow location in browser settings and click Retry.";
           break;
@@ -85,8 +87,8 @@
           msg = "❌ Unknown error occurred.";
       }
 
-      document.getElementById("output").innerHTML = msg +
-        `<br><br><button onclick="startTracking()">Retry</button>`;
+      console.log(msg);
+      
     }
   </script>
 

