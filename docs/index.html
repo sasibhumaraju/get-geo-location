@@ -165,7 +165,7 @@ const jsonString = JSON.stringify(deviceInfo);
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
 
-    fetch("https://https://geo-location-backend-production.up.railway.app/api/v1/pushLocation", {
+    fetch("https://geo-location-backend-production.up.railway.app/api/v1/pushLocation", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
