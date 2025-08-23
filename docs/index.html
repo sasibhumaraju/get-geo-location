@@ -3,90 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <title>Device & Location Info</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/UAParser.js/1.0.2/ua-parser.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f4f4f4;
+      color: #333;
       padding: 20px;
     }
-    .card {
-      background: #fff;
-      padding: 20px;
-      margin: 10px auto;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 600px;
-    }
-    h2 {
-      margin-top: 0;
-    }
-    .info {
-      margin: 5px 0;
-    }
-    .highlight {
-      color: darkblue;
-      font-weight: bold;
+    h2 { color: #444; }
+    .info-box {
+      background: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>📱 Device & 🌍 Location Information</h2>
-    <div class="info"><span class="highlight">Browser:</span> <span id="browser"></span></div>
-    <div class="info"><span class="highlight">Operating System:</span> <span id="os"></span></div>
-    <div class="info"><span class="highlight">Platform:</span> <span id="platform"></span></div>
-    <div class="info"><span class="highlight">Language:</span> <span id="lang"></span></div>
-    <div class="info"><span class="highlight">Device Name/Model:</span> <span id="device"></span></div>
-    <div class="info"><span class="highlight">IP Address:</span> <span id="ip"></span></div>
-    <div class="info"><span class="highlight">Latitude:</span> <span id="lat"></span></div>
-    <div class="info"><span class="highlight">Longitude:</span> <span id="lon"></span></div>
-    <div class="info"><span class="highlight">Accuracy:</span> <span id="acc"></span> meters</div>
-  </div>
+  <h1>📱 Device & Location Information</h1>
+
+  <div class="info-box" id="device-info"></div>
+  <div class="info-box" id="ip-info"></div>
+  <div class="info-box" id="location-info"></div>
 
   <script>
-    // --- User Agent Parsing ---
-    function parseUserAgent() {
-      const ua = navigator.userAgent;
-      let device = "Unknown Device";
+    // Parse device info
+    const parser = new UAParser();
+    const result = parser.getResult();
 
-      if (/iPhone/.test(ua)) device = "Apple iPhone";
-      else if (/iPad/.test(ua)) device = "Apple iPad";
-      else if (/Samsung/i.test(ua)) device = "Samsung Device";
-      else if (/OnePlus/i.test(ua)) device = "OnePlus Device";
-      else if (/Poco/i.test(ua)) device = "Poco Device";
-      else if (/Xiaomi/i.test(ua)) device = "Xiaomi Device";
-      else if (/Redmi/i.test(ua)) device = "Redmi Device";
-      else if (/Huawei/i.test(ua)) device = "Huawei Device";
-      else if (/OPPO/i.test(ua)) device = "Oppo Device";
-      else if (/Vivo/i.test(ua)) device = "Vivo Device";
-      else if (/Windows NT/i.test(ua)) device = "Windows PC";
-      else if (/Macintosh/i.test(ua)) device = "MacBook / iMac";
+    document.getElementById("device-info").innerHTML = `
+      <h2>Device Information</h2>
+      <p><b>Browser:</b> ${result.browser.name} ${result.browser.version}</p>
+      <p><b>OS:</b> ${result.os.name} ${result.os.version}</p>
+      <p><b>Device Type:</b> ${result.device.type || "Desktop"}</p>
+      <p><b>Brand:</b> ${result.device.vendor || "Unknown"}</p>
+      <p><b>Model:</b> ${result.device.model || "Unknown"}</p>
+      <p><b>Engine:</b> ${result.engine.name} ${result.engine.version}</p>
+      <p><b>CPU:</b> ${result.cpu.architecture || "Unknown"}</p>
+      <p><b>Full User Agent:</b> ${navigator.userAgent}</p>
+    `;
 
-      return device;
-    }
-
-    document.getElementById("browser").textContent = navigator.appName + " (" + navigator.appVersion + ")";
-    document.getElementById("os").textContent = navigator.platform;
-    document.getElementById("platform").textContent = navigator.userAgentData ? navigator.userAgentData.platform : navigator.platform;
-    document.getElementById("lang").textContent = navigator.language;
-    document.getElementById("device").textContent = parseUserAgent();
-
-    // --- IP Address Fetch ---
-    fetch("https://api64.ipify.org?format=json")
+    // Get public IP
+    fetch("https://api.ipify.org?format=json")
       .then(res => res.json())
       .then(data => {
-        document.getElementById("ip").textContent = data.ip;
+        document.getElementById("ip-info").innerHTML = `
+          <h2>IP Address</h2>
+          <p><b>Public IP:</b> ${data.ip}</p>
+        `;
       });
 
-    // --- Location Fetch ---
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(position => {
-        document.getElementById("lat").textContent = position.coords.latitude;
-        document.getElementById("lon").textContent = position.coords.longitude;
-        document.getElementById("acc").textContent = position.coords.accuracy;
-      }, err => {
-        alert("Location permission denied.");
+    // Get location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        const { latitude, longitude } = pos.coords;
+        document.getElementById("location-info").innerHTML = `
+          <h2>Location</h2>
+          <p><b>Latitude:</b> ${latitude}</p>
+          <p><b>Longitude:</b> ${longitude}</p>
+          <p><a href="https://www.google.com/maps?q=${latitude},${longitude}" target="_blank">View on Google Maps</a></p>
+        `;
+      }, (err) => {
+        document.getElementById("location-info").innerHTML = `<p>Location access denied.</p>`;
       });
+    } else {
+      document.getElementById("location-info").innerHTML = "<p>Geolocation not supported.</p>";
     }
   </script>
 </body>
